@@ -3,7 +3,7 @@ title: "Adopciones de Gatos - Análisis de Supervivencia"
 date: 2025-05-21
 authors:
   - name: "Lauro Reyes Rosas - 214532"
-  - name: "Ximena Paz"
+  - name: " Claudia Ximena Paz Cendejas - "
 format: html
 ---
 
