@@ -226,6 +226,23 @@ grViz("
 ")
 ```
 
+```{r}
+grViz("
+digraph {
+  graph [ranksep = 0.2, rankdir = LR]
+  node [shape=plaintext, fontname=Helvetica]
+
+  Color
+  Edad
+  Adoption
+  Days
+
+  Color -> Adoption
+  Edad -> Adoption
+  Adoption -> Days
+}
+", width = 400)
+```
 
 ```{r}
 grViz("
@@ -278,4 +295,135 @@ digraph {
 }
 ")
 
+```
+
+## Ajuste controlando la variable edad
+
+Para estimar de manera más precisa el efecto del color del gato sobre el tiempo de adopción, se incluyó la edad al ingreso como variable de control en el modelo de supervivencia. Esto permite separar el efecto del color del posible sesgo que podría generarse si, por ejemplo, los gatos negros fueran sistemáticamente más jóvenes o mayores que los de otros colores.
+
+```{r}
+cats <- cats |> 
+  filter(!is.na(intake_age)) |> 
+  mutate(
+    color_id = if_else(color == "Black", 1L, 2L),
+    age_std = as.numeric(scale(intake_age)),  # edad estandarizada
+    days = as.numeric(days_to_event)
+  )
+
+dat_stan <- list(
+  N = nrow(cats),
+  days = cats$days,
+  color = cats$color_id,
+  age = cats$age_std
+)
+
+# Modelo stan
+stan_model_code <- "
+data {
+  int<lower=1> N;
+  real<lower=0> days[N];
+  int<lower=1,upper=2> color[N];
+  real age[N];
+}
+parameters {
+  vector[2] alpha;
+  real beta_age;
+}
+model {
+  for (i in 1:N) {
+    real mu = exp(alpha[color[i]] + beta_age * age[i]);
+    days[i] ~ exponential(1 / mu);
+  }
+}
+"
+
+compiled_model <- rstan::stan_model(model_code = stan_model_code)
+fit <- rstan::sampling(compiled_model, data = dat_stan, chains = 4, cores = 4, iter = 2000)
+
+post <- as.data.frame(fit)
+
+mean_age <- mean(cats$age_std, na.rm = TRUE)
+
+# Calcular medias esperadas controlando por edad media
+mu_negro <- exp(post$`alpha[1]` + post$beta_age * mean_age)
+mu_otro  <- exp(post$`alpha[2]` + post$beta_age * mean_age)
+
+library(tibble)
+tibble(
+  Color = c("Negro", "Otro"),
+  Media = c(mean(mu_negro), mean(mu_otro)),
+  `IC 89% Inferior` = c(quantile(mu_negro, 0.055), quantile(mu_otro, 0.055)),
+  `IC 89% Superior` = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
+)
+
+
+```
+Después de ajustar por la edad de los gatos, se encuentra evidencia de que los gatos negros tardan más tiempo en ser adoptados en comparación con gatos de otros colores:
+
+El tiempo medio estimado de adopción para gatos negros es de aproximadamente 28.4 días, mientras que para otros gatos es de 24.5 días (IC 89%: 24.2 – 24.7).
+
+Esto sugiere que, controlando por edad, el color negro se asocia con un menor ritmo de adopción, lo cual puede reflejar sesgos o preferencias en el comportamiento de adopción por parte del público.
+
+```{r}
+
+library(ggplot2)
+results_tbl <- tibble(
+  Color = c("Negro", "Otro"),
+  Media = c(mean(mu_negro), mean(mu_otro)),
+  IC_Inf = c(quantile(mu_negro, 0.055), quantile(mu_otro, 0.055)),
+  IC_Sup = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
+)
+
+# Gráfica
+ggplot(results_tbl, aes(x = Color, y = Media, fill = Color)) +
+  geom_col(width = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = IC_Inf, ymax = IC_Sup), width = 0.2) +
+  labs(
+    title = "Tiempo medio de adopción por color (ajustado por edad)",
+    y = "Tiempo medio (días)", x = "Color del gato"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
+  theme(legend.position = "none")
+```
+
+
+```{r}
+grViz("
+digraph {
+  graph [rankdir=LR]
+  node [shape=box, style=filled, fillcolor=LightGray, fontname=Helvetica]
+
+  Color     [label='Color del gato']
+  Edad      [label='Edad al ingreso']
+  Mu        [label='μᵢ (tiempo medio)', shape=ellipse]
+  Lambda    [label='λᵢ (tasa)', shape=ellipse]
+  Dias      [label='Dᵢ (Tiempo hasta adopción)']
+  Estado    [label='Aᵢ (Adoptado o Censurado)']
+
+  Color -> Mu
+  Edad  -> Mu
+  Mu -> Lambda
+  Lambda -> Dias
+  Estado -> Dias
+}
+")
+```
+
+```{r}
+grViz("
+digraph {
+  graph [rankdir=LR]
+  node [shape=plaintext, fontname=Helvetica]
+
+  Color
+  Edad
+  Tasa
+  Tiempo
+
+  Color -> Tasa
+  Edad  -> Tasa
+  Tasa  -> Tiempo
+}
+")
 ```
