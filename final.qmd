@@ -13,6 +13,8 @@ format: html
 library(rethinking)
 library(DiagrammeR)
 library(tidyverse)
+library(dplyr)
+
 ```
 
 ## Introducción
@@ -281,81 +283,119 @@ digraph {
 
 ## Modelo de adopción por color
 
+En este modelo de supervivencia exponencial, analizamos el efecto del color del gato sobre el tiempo que tarda en ser adoptado, modelando dicho tiempo como una variable aleatoria con distribución exponencial cuya tasa depende del color del gato. Una ventaja de este enfoque es que permite incorporar no solo a los gatos que fueron adoptados, sino también a aquellos que no lo fueron durante el periodo de observación. A estos últimos se les considera como casos censurados, es decir, sabemos cuántos días estuvieron en el refugio sin ser adoptados, pero no conocemos el tiempo total que habrían esperado si hubieran permanecido más tiempo. Al incorporar esta información de censura en el modelo, se aprovecha mejor la evidencia disponible y se evitan sesgos en la estimación del tiempo medio de adopción por color. La inferencia se realiza bajo un enfoque bayesiano utilizando Stan.
+
 ```{r}
-cats <- cats |> 
+# Preparar datos incluyendo censura
+cats <- cats |>
   mutate(
     color_id = if_else(color == "Black", 1L, 2L),
+    adopted = if_else(out_event == "Adoption", 1L, 0L),
     days = as.numeric(days_to_event)
   )
 
-dat_stan_simple <- list(
+dat_stan_cens <- list(
   N = nrow(cats),
   days = cats$days,
-  color = cats$color_id
+  color = cats$color_id,
+  adopted = cats$adopted
 )
 
-stan_model_code_simple <- "
+# Modelo Stan que considera censura
+stan_code_cens <- "
 data {
   int<lower=1> N;
   real<lower=0> days[N];
   int<lower=1,upper=2> color[N];
+  int<lower=0,upper=1> adopted[N];
 }
 parameters {
   vector[2] alpha;
 }
 model {
   for (i in 1:N) {
-    real mu = exp(alpha[color[i]]);
-    days[i] ~ exponential(1 / mu);
+    real lambda = exp(-alpha[color[i]]);
+    if (adopted[i] == 1)
+      target += exponential_lpdf(days[i] | lambda);
+    else
+      target += exponential_lccdf(days[i] | lambda);
   }
 }
 "
 
-compiled_model_simple <- rstan::stan_model(model_code = stan_model_code_simple)
-fit_simple <- rstan::sampling(compiled_model_simple, data = dat_stan_simple,
-                              chains = 4, cores = 4, iter = 2000)
+# Compilar y ajustar
+compiled_cens <- rstan::stan_model(model_code = stan_code_cens)
+fit_cens <- rstan::sampling(compiled_cens, data = dat_stan_cens,
+                            chains = 4, iter = 2000, cores = 4)
 
-post_simple <- as.data.frame(fit_simple)
-mu_negro_simple <- exp(post_simple$`alpha[1]`)
-mu_otro_simple  <- exp(post_simple$`alpha[2]`)
+```
+```{r}
+post_cens <- as.data.frame(fit_cens)
+
+mu_negro_cens <- exp(post_cens$`alpha[1]`)
+mu_otro_cens  <- exp(post_cens$`alpha[2]`)
 
 library(tibble)
-tibble(
+results_tbl_cens <- tibble(
   Color = c("Negro", "Otro"),
-  Media = c(mean(mu_negro_simple), mean(mu_otro_simple)),
-  `IC 89% Inferior` = c(quantile(mu_negro_simple, 0.055), quantile(mu_otro_simple, 0.055)),
-  `IC 89% Superior` = c(quantile(mu_negro_simple, 0.945), quantile(mu_otro_simple, 0.945))
+  Media = c(mean(mu_negro_cens), mean(mu_otro_cens)),
+  `IC 89% Inferior` = c(quantile(mu_negro_cens, 0.055), quantile(mu_otro_cens, 0.055)),
+  `IC 89% Superior` = c(quantile(mu_negro_cens, 0.945), quantile(mu_otro_cens, 0.945))
 )
+print(results_tbl_cens)
+
 ```
-El modelo de supervivencia exponencial indica que los gatos negros tardan, en promedio, más días en ser adoptados (28.1 días) en comparación con gatos de otros colores (24.8 días). Sin embargo, este resultado se basa únicamente en la variable observable del color. De acuerdo con el diagrama causal propuesto, existen factores no observados —como el comportamiento del gato, la actitud del adoptante o el estado de salud— que también podrían influir en la tasa de adopción. Por tanto, esta diferencia podría no deberse exclusivamente al color, sino a variables latentes no incluidas en el modelo actual.
+```{r}
+
+ggplot(results_tbl_cens, aes(x = Color, y = Media, fill = Color)) +
+  geom_col(width = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = `IC 89% Inferior`, ymax = `IC 89% Superior`), width = 0.2) +
+  labs(
+    title = "Tiempo medio de adopción por color",
+    y = "Tiempo medio (días)", x = "Color del gato"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
+  theme(legend.position = "none")
+
+```
+Los resultados muestran que, en promedio, los gatos negros tardan más en ser adoptados que los de otros colores. Este patrón sugiere que el color del gato podría estar asociado con un menor ritmo de adopción, aunque es importante considerar que pueden existir otros factores no observados que también influyen en este proceso.
 
 ## Ajuste controlando la variable edad
 
-Para estimar de manera más precisa el efecto del color del gato sobre el tiempo de adopción, se incluyó la edad al ingreso como variable de control en el modelo de supervivencia. Esto permite separar el efecto del color del posible sesgo que podría generarse si, por ejemplo, los gatos negros fueran sistemáticamente más jóvenes o mayores que los de otros colores.
+Para estimar de forma más realista el efecto del color del gato sobre el tiempo de adopción, se construyó un modelo de supervivencia exponencial que controla por la edad al ingreso y además considera la censura a la derecha. Esto permite diferenciar entre gatos que fueron efectivamente adoptados y aquellos que no lo fueron durante el periodo de observación.
+
+Se asume que el tiempo hasta la adopción sigue una distribución exponencial con una tasa específica para cada gato. Esta tasa depende del color del pelaje y la edad al ingreso. En los casos en que el evento no se observa (censura), se modela la probabilidad de no adopción hasta el día observado usando la función de supervivencia de la distribución exponencial.
+
+Este enfoque permite estimar con mayor precisión el efecto del color, aislando posibles confusiones derivadas de diferencias sistemáticas en edad entre grupos. Así se evita atribuir al color lo que en realidad podría ser efecto de la edad.
 
 ```{r}
+# Preparar los datos
 cats <- cats |> 
   filter(!is.na(intake_age)) |> 
   mutate(
     color_id = if_else(color == "Black", 1L, 2L),
     age_std = as.numeric(scale(intake_age)),  # edad estandarizada
-    days = as.numeric(days_to_event)
+    days = as.numeric(days_to_event),
+    adopted = if_else(out_event == "Adoption", 1L, 0L)  # 1 = adoptado, 0 = censurado
   )
 
 dat_stan <- list(
   N = nrow(cats),
   days = cats$days,
   color = cats$color_id,
-  age = cats$age_std
+  age = cats$age_std,
+  adopted = cats$adopted
 )
 
-# Modelo stan
+# Modelo Stan con censura (usando funciones ya incluidas en Stan)
 stan_model_code <- "
 data {
   int<lower=1> N;
   real<lower=0> days[N];
   int<lower=1,upper=2> color[N];
   real age[N];
+  int<lower=0,upper=1> adopted[N];
 }
 parameters {
   vector[2] alpha;
@@ -364,41 +404,26 @@ parameters {
 model {
   for (i in 1:N) {
     real mu = exp(alpha[color[i]] + beta_age * age[i]);
-    days[i] ~ exponential(1 / mu);
+    real lambda = 1 / mu;
+
+    if (adopted[i] == 1)
+      target += exponential_lpdf(days[i] | lambda);
+    else
+      target += exponential_lccdf(days[i] | lambda);
   }
 }
 "
 
 compiled_model <- rstan::stan_model(model_code = stan_model_code)
 fit <- rstan::sampling(compiled_model, data = dat_stan, chains = 4, cores = 4, iter = 2000)
-
 post <- as.data.frame(fit)
 
+# Evaluación a edad promedio
 mean_age <- mean(cats$age_std, na.rm = TRUE)
-
-# Calcular medias esperadas controlando por edad media
 mu_negro <- exp(post$`alpha[1]` + post$beta_age * mean_age)
 mu_otro  <- exp(post$`alpha[2]` + post$beta_age * mean_age)
 
-library(tibble)
-tibble(
-  Color = c("Negro", "Otro"),
-  Media = c(mean(mu_negro), mean(mu_otro)),
-  `IC 89% Inferior` = c(quantile(mu_negro, 0.055), quantile(mu_otro, 0.055)),
-  `IC 89% Superior` = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
-)
-
-
-```
-Después de ajustar por la edad de los gatos, se encuentra evidencia de que los gatos negros tardan más tiempo en ser adoptados en comparación con gatos de otros colores:
-
-El tiempo medio estimado de adopción para gatos negros es de aproximadamente 28.4 días, mientras que para otros gatos es de 24.5 días (IC 89%: 24.2 – 24.7).
-
-Esto sugiere que, controlando por edad, el color negro se asocia con un menor ritmo de adopción, lo cual puede reflejar sesgos o preferencias en el comportamiento de adopción por parte del público.
-
-```{r}
-
-library(ggplot2)
+# Tabla resumen
 results_tbl <- tibble(
   Color = c("Negro", "Otro"),
   Media = c(mean(mu_negro), mean(mu_otro)),
@@ -406,19 +431,19 @@ results_tbl <- tibble(
   IC_Sup = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
 )
 
-# Gráfica
 ggplot(results_tbl, aes(x = Color, y = Media, fill = Color)) +
   geom_col(width = 0.5, color = "black") +
   geom_errorbar(aes(ymin = IC_Inf, ymax = IC_Sup), width = 0.2) +
   labs(
-    title = "Tiempo medio de adopción por color (ajustado por edad)",
+    title = "Tiempo medio de adopción por color y edad ",
     y = "Tiempo medio (días)", x = "Color del gato"
   ) +
   theme_minimal() +
   scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
   theme(legend.position = "none")
-```
 
+```
+Con estos resultados vemos que los gatos negros tienden a tardar más en ser adoptados, lo cual respalda la hipótesis de que el color podría influir en las decisiones de adopción, aunque no necesariamente sea el único factor causal 
 
 ```{r}
 grViz("
