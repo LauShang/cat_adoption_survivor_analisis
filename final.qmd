@@ -3,7 +3,7 @@ title: "Adopciones de Gatos - Análisis de Supervivencia"
 date: 2025-05-21
 authors:
   - name: "Lauro Reyes Rosas - 214532"
-  - name: " Claudia Ximena Paz Cendejas - "
+  - name: " Claudia Ximena Paz Cendejas - 214570"
 format: html
 ---
 
@@ -230,24 +230,6 @@ grViz("
 grViz("
 digraph {
   graph [ranksep = 0.2, rankdir = LR]
-  node [shape=plaintext, fontname=Helvetica]
-
-  Color
-  Edad
-  Adoption
-  Days
-
-  Color -> Adoption
-  Edad -> Adoption
-  Adoption -> Days
-}
-", width = 400)
-```
-
-```{r}
-grViz("
-digraph {
-  graph [ranksep = 0.2, rankdir = LR]
   node [shape=plaintext]
   Color
   Days
@@ -296,6 +278,56 @@ digraph {
 ")
 
 ```
+
+## Modelo de adopción por color
+
+```{r}
+cats <- cats |> 
+  mutate(
+    color_id = if_else(color == "Black", 1L, 2L),
+    days = as.numeric(days_to_event)
+  )
+
+dat_stan_simple <- list(
+  N = nrow(cats),
+  days = cats$days,
+  color = cats$color_id
+)
+
+stan_model_code_simple <- "
+data {
+  int<lower=1> N;
+  real<lower=0> days[N];
+  int<lower=1,upper=2> color[N];
+}
+parameters {
+  vector[2] alpha;
+}
+model {
+  for (i in 1:N) {
+    real mu = exp(alpha[color[i]]);
+    days[i] ~ exponential(1 / mu);
+  }
+}
+"
+
+compiled_model_simple <- rstan::stan_model(model_code = stan_model_code_simple)
+fit_simple <- rstan::sampling(compiled_model_simple, data = dat_stan_simple,
+                              chains = 4, cores = 4, iter = 2000)
+
+post_simple <- as.data.frame(fit_simple)
+mu_negro_simple <- exp(post_simple$`alpha[1]`)
+mu_otro_simple  <- exp(post_simple$`alpha[2]`)
+
+library(tibble)
+tibble(
+  Color = c("Negro", "Otro"),
+  Media = c(mean(mu_negro_simple), mean(mu_otro_simple)),
+  `IC 89% Inferior` = c(quantile(mu_negro_simple, 0.055), quantile(mu_otro_simple, 0.055)),
+  `IC 89% Superior` = c(quantile(mu_negro_simple, 0.945), quantile(mu_otro_simple, 0.945))
+)
+```
+El modelo de supervivencia exponencial indica que los gatos negros tardan, en promedio, más días en ser adoptados (28.1 días) en comparación con gatos de otros colores (24.8 días). Sin embargo, este resultado se basa únicamente en la variable observable del color. De acuerdo con el diagrama causal propuesto, existen factores no observados —como el comportamiento del gato, la actitud del adoptante o el estado de salud— que también podrían influir en la tasa de adopción. Por tanto, esta diferencia podría no deberse exclusivamente al color, sino a variables latentes no incluidas en el modelo actual.
 
 ## Ajuste controlando la variable edad
 
