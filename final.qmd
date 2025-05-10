@@ -1,0 +1,280 @@
+---
+title: "Adopciones de Gatos - Análisis de Supervivencia"
+date: 2025-05-21
+authors:
+  - name: "Lauro Reyes Rosas - 214532"
+  - name: "Ximena Paz"
+format: html
+---
+
+# Proyecto Final
+
+```{r, echo=FALSE, include=FALSE}
+library(rethinking)
+library(DiagrammeR)
+library(tidyverse)
+```
+
+## Introducción
+
+El presente análisis se basa en el libro Statistical Rethinking de Richard McElreath (segunda edición), el cual introduce los modelos de supervivencia como herramientas adecuadas para estudiar eventos contables en el tiempo, especialmente cuando el resultado de interés es la duración hasta que ocurre un evento. Estos modelos son particularmente útiles en contextos donde algunas observaciones están censadas, es decir, no se ha observado aún el evento de interés, pero se tiene información parcial sobre el tiempo de espera.
+
+El objetivo de este estudio es evaluar si el color del gato influye en el tiempo que tarda en ser adoptado desde su ingreso a un albergue. Esta pregunta se enmarca dentro de un modelo de supervivencia con tiempos de espera que se modelan mediante una distribución exponencial, y que considera adecuadamente los casos censados (gatos que no fueron adoptados durante el periodo de observación).
+
+Para ello, se emplea el conjunto de datos AustinCats, incluido en el paquete rethinking, que contiene información detallada sobre más de 22,000 gatos atendidos en un refugio animal. A continuación, se presenta una descripción general de la estructura del conjunto de datos:
+
+```{r, echo=FALSE}
+data(AustinCats)
+cats <- AustinCats
+glimpse(cats)
+```
+## Tratamiento de variables
+
+Se creó una variable binaria _color_group_ que clasifica a los gatos como "Black" si su color es exactamente negro, y "Other" en cualquier otro caso. A partir de esta variable, se calculó la proporción de cada grupo: 13.3% de los gatos son negros y 86.7% de otro color. La gráfica de barras resultante ilustra estas proporciones, destacando visualmente la menor representación de gatos negros en el refugio.
+
+```{r, echo=FALSE}
+# Crear variable de color binaria
+cats <- cats |>
+  mutate(
+    color_group = if_else(color == "Black", "Black", "Other")
+  )
+
+# Calcular proporciones
+color_summary <- cats |>
+  count(color_group) |>
+  mutate(
+    porcentaje = n / sum(n) * 100,
+    label = paste0(round(porcentaje, 1), "%")
+  )
+
+ggplot(color_summary, aes(x = color_group, y = porcentaje, fill = color_group)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = label), vjust = -0.5, size = 5) +
+  scale_fill_manual(values = c("Negro" = "black", "Otro" = "grey70")) +
+  theme_minimal() +
+  labs(
+    title = "Proporción de gatos por color (Negro vs Otros)",
+    fill = "Color"
+  ) +
+  ylim(0, max(color_summary$porcentaje) + 10)
+```
+
+Siguiendo el tratamiento propuesto por McElreath, se transformó la variable _out_event_ en dos indicadores binarios: adopted, que toma el valor 1 si el gato fue adoptado, y censored, que toma el valor 1 si el evento fue distinto a adopción. Este enfoque permite distinguir entre observaciones completas y censuradas, lo cual es fundamental en modelos de supervivencia.
+
+```{r, echo=FALSE, warning=FALSE}
+cats <- cats |>
+  mutate(
+    adopted = if_else(out_event == "Adoption", 1L, 0L),
+    censored = 1L - adopted
+  )
+
+# Resumir y transformar a formato largo para graficar
+event_summary <- cats %>%
+  summarise(
+    Adoptado = sum(adopted),
+    Censurado = sum(censored)
+  ) %>%
+  pivot_longer(cols = everything(), names_to = "evento", values_to = "n") %>%
+  mutate(
+    porcentaje = n / sum(n) * 100,
+    label = paste0(round(porcentaje, 1), "%")
+  )
+
+# Gráfico de barras: Adoptado vs Censurado
+ggplot(event_summary, aes(x = evento, y = porcentaje, fill = evento)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = label), vjust = -0.5, size = 5) +
+  scale_fill_manual(values = c("Adoptado" = "steelblue", "Censurado" = "tomato")) +
+  theme_minimal() +
+  labs(
+    title = "Proporción de gatos adoptados y censurados",
+    x = "Evento de salida",
+    y = "Porcentaje",
+    fill = "Evento"
+  ) +
+  ylim(0, max(event_summary$porcentaje) + 10)
+
+```
+
+En este caso, el 50.8% de los gatos fueron adoptados, mientras que el 49.2% fueron censurados. Estos últimos incluyen tanto a los gatos que permanecen en el refugio como a aquellos que salieron por otras razones. Esta proporción cercana al 50% resalta la importancia de incorporar adecuadamente la censura por la derecha para evitar sesgos en la estimación de los tiempos de espera hasta la adopción.
+
+## Modelo Generativo
+
+### DAG
+
+```{r}
+grViz("
+digraph {
+  graph [ranksep = 0.2, rankdir = LR]
+  node [shape=plaintext]
+  U [shape=circle]
+  Color
+  Days
+  Adoption
+  edge [minlen = 3]
+  U -> Adoption
+  Color -> Adoption
+  Adoption -> Days
+}
+", width = 400)
+```
+
+En este DAG:
+
+* **U** representa factores no observados (por ejemplo, personalidad del gato o condiciones del adoptante).
+* **Color** representa el color del gato, la variable de interés observada.
+* **Adoption** es la tasa de adopción
+* **Days** es el tiempo observado hasta la adopción (o censura), generado a partir de la tasa **Adoption**.
+
+Este esquema refleja la suposición de que tanto el color como otros factores no observados influyen en la tasa de adopción, la cual a su vez determina el tiempo hasta la adopción o censura.
+
+El fenómeno que se busca modelar es el tiempo que tarda un gato en ser adoptado desde su ingreso al refugio. Este tipo de variable —tiempo hasta un evento— es típicamente abordado mediante modelos de supervivencia. En este caso, se asume que los tiempos de espera siguen una distribución exponencial, adecuada cuando se supone que la probabilidad de adopción es constante a lo largo del tiempo, es decir, que la “tasa de adopción” no depende del tiempo ya transcurrido.
+
+El tiempo de espera hasta la adopción se modela como una variable aleatoria continua con distribución exponencial:
+$$D_i \sim \text{Exponencial}(\lambda_i)$$
+donde:
+
+* $D_i$: tiempo hasta la adopción o censura del gato $i$,
+* $\lambda_i = \frac{1}{\mu_i}$: tasa de adopción, inversa del tiempo medio,
+* $log(\mu_i) = \alpha_{c[i]}$: tiempo medio depende del grupo de color (negro u otro), con $\alpha_1$ para negros y $\alpha_2$ para otros.
+**Además**:
+* Si el gato no fue adoptado (censura), se simula el tiempo de espera hasta cierto umbral, y se marca como censado.
+* La probabilidad de adopción condicionada a los días observados, si censado, se obtiene con la complementaria de la **CDF**:
+$$Pr(D_i > d_i | \lambda_i) = exp(-\lambda_i d_i)$$
+
+### Simulación
+La siguiente función simula una muestra de N gatos en un refugio:
+```{r}
+sim_cats <- function(N = 10000, alpha_black = log(70), alpha_other = log(50), p_black = 0.3, p_censored = 0.49) {
+  # 1 = negro, 2 = otro
+  color_id <- rbinom(N, 1, p_black) + 1
+  
+  # Parametrización
+  alpha <- c(alpha_black, alpha_other)
+  mu <- exp(alpha[color_id])
+  lambda <- 1 / mu
+  
+  # Simular tiempos verdaderos
+  time_true <- rexp(N, rate = lambda)
+  
+  # Asignar censura de manera aleatoria (p_censored de los casos)
+  censored <- rbinom(N, 1, p_censored)
+  
+  # Tiempo observado es igual al real si fue adoptado, o censurado artificialmente
+  # Para simplificar, no truncamos el tiempo observado
+  adopted <- 1L - censored
+  time_obs <- time_true  # todos los tiempos son observados hasta ese punto
+  
+  tibble(
+    color_id = color_id,
+    mu = mu,
+    lambda = lambda,
+    time_true = time_true,
+    time_obs = time_obs,
+    adopted = adopted,
+    censored = censored
+  )
+}
+
+```
+
+```{r, echo=FALSE}
+set.seed(123)
+sim <- sim_cats()
+sim <- sim |> 
+  mutate(
+    color_group = if_else(color_id == 1, "Negro", "Otro"),
+    status = if_else(adopted == 1L, "Adoptado", "Censurado")
+  )
+
+# Visualización: densidad de tiempos observados por color y estado
+library(ggplot2)
+ggplot(sim, aes(x = time_obs, fill = status)) +
+  geom_density(alpha = 0.5, adjust = 1) +
+  facet_wrap(~ color_group) +
+  theme_minimal() +
+  labs(
+    title = "Densidad de tiempos observados por color y estado",
+    x = "Tiempo observado (días)",
+    y = "Densidad estimada",
+    fill = "Estado"
+  )
+```
+
+```{r, warning=FALSE}
+grViz("
+  digraph {
+    graph [rankdir=LR, nodesep=1]
+    node [shape=box, style=filled, fillcolor=LightGray]
+    color_id [label='color_id']
+    mu [label='mu']
+    lambda [label='lambda']
+    time_true [label='time_true']
+    time_obs [label='time_obs']
+    adopted [label='adopted']
+    censored [label='censored']
+
+    color_id -> mu
+    mu -> lambda
+    lambda -> time_true
+    time_true -> time_obs
+    time_obs -> adopted
+    time_obs -> censored
+  }
+")
+```
+
+
+```{r}
+grViz("
+digraph {
+  graph [ranksep = 0.2, rankdir = LR]
+  node [shape=plaintext]
+  Color
+  Days
+  Adoption
+  edge [minlen = 3]
+  Color -> Adoption
+  Adoption -> Days
+}
+", width = 400)
+```
+
+```{mermaid}
+graph LR
+    U((U)) --> A
+    C --> A
+    A --> D
+    style U fill:#fff,stroke:#333,stroke-width:2px
+    style A fill:none,stroke:none
+    style C fill:none,stroke:none
+    style D fill:none,stroke:none
+    linkStyle 0 stroke-width:2px,stroke:#333
+    linkStyle 1 stroke-width:1px,stroke:#333
+    linkStyle 2 stroke-width:1px,stroke:#333
+    %% Adjust spacing (similar to ranksep)
+    %%{init: {'config': {'rankSpacing': 20}}}%%
+```
+
+
+```{r}
+grViz("
+digraph {
+  graph [ranksep=0.5, rankdir=LR]
+  node [shape=box, fontname=Helvetica]
+
+  Color [label='Color ID']
+  mu [label='μᵢ (mean time)', shape=ellipse]
+  lambda [label='λᵢ (rate)', shape=ellipse]
+  A [label='Aᵢ (Adopted or Censored)']
+  D [label='Dᵢ (Time to Event)']
+
+  Color -> mu
+  mu -> lambda
+  lambda -> D
+  A -> D
+}
+")
+
+```
+
