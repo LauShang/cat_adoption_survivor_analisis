@@ -499,6 +499,10 @@ compiled_model <- rstan::stan_model(model_code = stan_model_code)
 fit <- rstan::sampling(compiled_model, data = dat_stan, chains = 4, cores = 4, iter = 2000)
 post <- as.data.frame(fit)
 
+```
+
+```{r}
+
 # Evaluación a edad promedio
 mean_age <- mean(cats$age_std, na.rm = TRUE)
 mu_negro <- exp(post$`alpha[1]` + post$beta_age * mean_age)
@@ -511,6 +515,12 @@ results_tbl <- tibble(
   IC_Inf = c(quantile(mu_negro, 0.055), quantile(mu_otro, 0.055)),
   IC_Sup = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
 )
+
+print(results_tbl)
+
+```
+
+```{r}
 
 ggplot(results_tbl, aes(x = Color, y = Media, fill = Color)) +
   geom_col(width = 0.5, color = "black") +
@@ -565,3 +575,54 @@ digraph {
 }
 ")
 ```
+
+...
+
+## Comparación de modelos
+
+A continuación, se presenta una tabla comparativa con los resultados estimados para el tiempo medio de adopción por color de gato, obtenidos a partir de tres modelos distintos:
+
+1. Modelo **sin censura**: solo considera gatos adoptados.
+2. Modelo **con censura**: incorpora gatos que aún no han sido adoptados.
+3. Modelo **con censura + ajuste por edad**: considera censura y controla por edad al ingreso.
+
+```{r}
+# Preparar resumen de los tres modelos dinámicamente
+results_tbl_nc <- tibble(
+  Modelo = "Sin censura",
+  Color = c("Negro", "Otro"),
+  Media = c(mean(mu_negro_nc), mean(mu_otro_nc)),
+  `IC 89% Inferior` = c(quantile(mu_negro_nc, 0.055), quantile(mu_otro_nc, 0.055)),
+  `IC 89% Superior` = c(quantile(mu_negro_nc, 0.945), quantile(mu_otro_nc, 0.945))
+)
+
+results_tbl_cens <- tibble(
+  Modelo = "Con censura",
+  Color = c("Negro", "Otro"),
+  Media = c(mean(mu_negro_cens), mean(mu_otro_cens)),
+  `IC 89% Inferior` = c(quantile(mu_negro_cens, 0.055), quantile(mu_otro_cens, 0.055)),
+  `IC 89% Superior` = c(quantile(mu_negro_cens, 0.945), quantile(mu_otro_cens, 0.945))
+)
+
+results_tbl_edad <- tibble(
+  Modelo = "Con censura y edad",
+  Color = c("Negro", "Otro"),
+  Media = c(mean(mu_negro), mean(mu_otro)),
+  `IC 89% Inferior` = c(quantile(mu_negro, 0.055), quantile(mu_otro, 0.055)),
+  `IC 89% Superior` = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
+)
+
+results_comp <- bind_rows(results_tbl_nc, results_tbl_cens, results_tbl_edad)
+print(results_comp)
+```
+
+Esta tabla permite observar cómo la inclusión de casos censurados y el control por edad afectan las estimaciones del tiempo medio de adopción. Se destaca que los gatos negros presentan sistemáticamente tiempos medios de adopción mayores que los de otros colores, y que omitir la censura tiende a subestimar dichos tiempos.
+
+## Conclusiones
+
+- El modelo **con censura** incorpora toda la información, incluyendo gatos aún no adoptados, y ofrece estimaciones más realistas.
+- El modelo **sin censura** ignora casos censurados, lo que puede subestimar el tiempo real de espera.
+- En ambos modelos, se observa que los gatos negros tienden a tardar más en ser adoptados.
+- Al controlar por **edad**, se refina la estimación y se reduce el riesgo de atribuir erróneamente efectos al color que podrían deberse a diferencias de edad.
+
+
