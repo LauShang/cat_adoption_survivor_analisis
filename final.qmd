@@ -281,7 +281,88 @@ digraph {
 
 ```
 
-## Modelo de adopción por color
+## Modelo considerando color sin censura
+
+En este modelo de supervivencia exponencial se analiza el efecto del color del gato sobre el tiempo medio de adopción sin tomar en cuenta la censura, es decir, se incluyen únicamente los gatos que fueron adoptados, ignorando aquellos que aún permanecen en el refugio al finalizar el periodo de observación.
+
+Este enfoque es más sencillo, pero puede generar estimaciones sesgadas del tiempo medio de adopción, ya que descarta intencionalmente a los gatos que tardan más en ser adoptados. Al excluir los casos censurados, se pierde información valiosa y se puede subestimar el tiempo real de espera, especialmente si hay muchos gatos no adoptados en el conjunto de datos.
+
+Por lo tanto, aunque este modelo puede ser útil como línea base o comparación, no refleja completamente la realidad del proceso de adopción.
+
+```{r}
+cats_nc <- cats |> 
+  mutate(
+    color_id = if_else(color == "Black", 1L, 2L),
+    adopted = if_else(out_event == "Adoption", 1L, 0L),
+    days = as.numeric(days_to_event)
+  ) |> 
+  filter(adopted == 1L)
+
+dat_stan_nc <- list(
+  N = nrow(cats_nc),
+  days = cats_nc$days,
+  color = cats_nc$color_id
+)
+
+stan_code_nc <- "
+data {
+  int<lower=1> N;
+  real<lower=0> days[N];
+  int<lower=1,upper=2> color[N];
+}
+parameters {
+  vector[2] alpha;
+}
+model {
+  for (i in 1:N) {
+    real lambda = exp(-alpha[color[i]]);
+    target += exponential_lpdf(days[i] | lambda);
+  }
+}
+"
+compiled_nc <- rstan::stan_model(model_code = stan_code_nc)
+
+fit_nc <- rstan::sampling(compiled_nc, data = dat_stan_nc, 
+                          chains = 4, iter = 2000, cores = 4)
+
+```
+
+```{r}
+
+post_nc <- as.data.frame(fit_nc)
+
+mu_negro_nc <- exp(post_nc$`alpha[1]`)
+mu_otro_nc  <- exp(post_nc$`alpha[2]`)
+
+results_tbl_nc <- tibble(
+  Color = c("Negro", "Otro"),
+  Media = c(mean(mu_negro_nc), mean(mu_otro_nc)),
+  `IC 89% Inferior` = c(quantile(mu_negro_nc, 0.055), quantile(mu_otro_nc, 0.055)),
+  `IC 89% Superior` = c(quantile(mu_negro_nc, 0.945), quantile(mu_otro_nc, 0.945))
+)
+
+print(results_tbl_nc)
+
+
+```
+
+```{r}
+
+ggplot(results_tbl_nc, aes(x = Color, y = Media, fill = Color)) +
+  geom_col(width = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = `IC 89% Inferior`, ymax = `IC 89% Superior`), width = 0.2) +
+  labs(
+    title = "Tiempo medio de días considerando color sin censura",
+    y = "Tiempo medio (días)", x = "Color del gato"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
+  theme(legend.position = "none")
+
+
+```
+
+## Modelo considerando color con censura 
 
 En este modelo de supervivencia exponencial, analizamos el efecto del color del gato sobre el tiempo que tarda en ser adoptado, modelando dicho tiempo como una variable aleatoria con distribución exponencial cuya tasa depende del color del gato. Una ventaja de este enfoque es que permite incorporar no solo a los gatos que fueron adoptados, sino también a aquellos que no lo fueron durante el periodo de observación. A estos últimos se les considera como casos censurados, es decir, sabemos cuántos días estuvieron en el refugio sin ser adoptados, pero no conocemos el tiempo total que habrían esperado si hubieran permanecido más tiempo. Al incorporar esta información de censura en el modelo, se aprovecha mejor la evidencia disponible y se evitan sesgos en la estimación del tiempo medio de adopción por color. La inferencia se realiza bajo un enfoque bayesiano utilizando Stan.
 
