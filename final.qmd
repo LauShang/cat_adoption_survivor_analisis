@@ -362,6 +362,32 @@ ggplot(results_tbl_nc, aes(x = Color, y = Media, fill = Color)) +
 
 ```
 
+```{r}
+
+posterior_mu_nc <- tibble(
+  mu_negro = mu_negro_nc,
+  mu_otro  = mu_otro_nc
+) |>
+  pivot_longer(cols = everything(), names_to = "Color", values_to = "mu") |>
+  mutate(Color = recode(Color,
+                        "mu_negro" = "Negro",
+                        "mu_otro" = "Otro"))
+
+ggplot(posterior_mu_nc, aes(x = mu, fill = Color)) +
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
+  labs(title = "Distribución posterior del tiempo medio de adopción (sin censura)",
+       x = "Tiempo medio estimado (mu)",
+       y = "Densidad",
+       fill = "Color del gato") +
+  theme_minimal()
+
+
+```
+
+Esta distribución posterior muestra la estimación del tiempo medio de adopción para gatos negros y de otros colores, considerando únicamente aquellos que fueron adoptados. Aunque se observa que los gatos negros tienden a esperar más tiempo que los de otros colores, este análisis no toma en cuenta a los gatos que aún no han sido adoptados o que salieron del refugio por otras razones. Por lo tanto, los resultados podrían subestimar el tiempo real de espera, especialmente si los casos no adoptados tienden a ser los de mayor duración.
+
+
 ## Modelo considerando color con censura 
 
 En este modelo de supervivencia exponencial, analizamos el efecto del color del gato sobre el tiempo que tarda en ser adoptado, modelando dicho tiempo como una variable aleatoria con distribución exponencial cuya tasa depende del color del gato. Una ventaja de este enfoque es que permite incorporar no solo a los gatos que fueron adoptados, sino también a aquellos que no lo fueron durante el periodo de observación. A estos últimos se les considera como casos censurados, es decir, sabemos cuántos días estuvieron en el refugio sin ser adoptados, pero no conocemos el tiempo total que habrían esperado si hubieran permanecido más tiempo. Al incorporar esta información de censura en el modelo, se aprovecha mejor la evidencia disponible y se evitan sesgos en la estimación del tiempo medio de adopción por color. La inferencia se realiza bajo un enfoque bayesiano utilizando Stan.
@@ -441,6 +467,30 @@ ggplot(results_tbl_cens, aes(x = Color, y = Media, fill = Color)) +
 
 ```
 Los resultados muestran que, en promedio, los gatos negros tardan más en ser adoptados que los de otros colores. Este patrón sugiere que el color del gato podría estar asociado con un menor ritmo de adopción, aunque es importante considerar que pueden existir otros factores no observados que también influyen en este proceso.
+
+```{r}
+
+posterior_mu <- tibble(
+  mu_negro = mu_negro_cens,
+  mu_otro  = mu_otro_cens
+) |> 
+  pivot_longer(cols = everything(), names_to = "Color", values_to = "mu") |>
+  mutate(Color = recode(Color,
+                        "mu_negro" = "Negro",
+                        "mu_otro" = "Otro"))
+
+ggplot(posterior_mu, aes(x = mu, fill = Color)) +
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
+  labs(title = "Distribución posterior del tiempo medio de adopción considerando censura",
+       x = "Tiempo medio estimado (mu)",
+       y = "Densidad",
+       fill = "Color del gato") +
+  theme_minimal()
+
+```
+
+Según la distribución posterior del tiempo medio de adopción, los gatos negros tardan consistentemente más en ser adoptados que los de otros colores, y esta diferencia está respaldada por una clara separación en sus distribuciones posteriores.
 
 ## Ajuste controlando la variable edad
 
@@ -537,86 +587,30 @@ ggplot(results_tbl, aes(x = Color, y = Media, fill = Color)) +
 Con estos resultados vemos que los gatos negros tienden a tardar más en ser adoptados, lo cual respalda la hipótesis de que el color podría influir en las decisiones de adopción, aunque no necesariamente sea el único factor causal 
 
 ```{r}
-grViz("
-digraph {
-  graph [rankdir=LR]
-  node [shape=box, style=filled, fillcolor=LightGray, fontname=Helvetica]
 
-  Color     [label='Color del gato']
-  Edad      [label='Edad al ingreso']
-  Mu        [label='μᵢ (tiempo medio)', shape=ellipse]
-  Lambda    [label='λᵢ (tasa)', shape=ellipse]
-  Dias      [label='Dᵢ (Tiempo hasta adopción)']
-  Estado    [label='Aᵢ (Adoptado o Censurado)']
+posterior_mu_edad <- tibble(
+  mu_negro = mu_negro,
+  mu_otro  = mu_otro
+) |>
+  pivot_longer(cols = everything(), names_to = "Color", values_to = "mu") |>
+  mutate(Color = recode(Color,
+                        "mu_negro" = "Negro",
+                        "mu_otro" = "Otro"))
 
-  Color -> Mu
-  Edad  -> Mu
-  Mu -> Lambda
-  Lambda -> Dias
-  Estado -> Dias
-}
-")
+ggplot(posterior_mu_edad, aes(x = mu, fill = Color)) +
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
+  labs(title = "Distribución posterior del tiempo medio de adopción (ajustado por edad)",
+       x = "Tiempo medio estimado (mu)",
+       y = "Densidad",
+       fill = "Color del gato") +
+  theme_minimal()
+
+
 ```
 
-```{r}
-grViz("
-digraph {
-  graph [rankdir=LR]
-  node [shape=plaintext, fontname=Helvetica]
+Esta distribución posterior muestra los tiempos medios estimados de adopción para gatos negros y de otros colores, ajustando por edad al ingreso. Al incorporar la edad como covariable, se controla por posibles diferencias sistemáticas en la edad entre grupos. Aun así, los gatos negros presentan un mayor tiempo medio de espera, lo que sugiere que el color sigue teniendo un efecto importante en la adopción, incluso cuando se consideran diferencias en edad. Esto refuerza la hipótesis de que existen factores adicionales, como sesgos perceptuales, que podrían influir en las decisiones de adopción.
 
-  Color
-  Edad
-  Tasa
-  Tiempo
-
-  Color -> Tasa
-  Edad  -> Tasa
-  Tasa  -> Tiempo
-}
-")
-```
-
-...
-
-## Comparación de modelos
-
-A continuación, se presenta una tabla comparativa con los resultados estimados para el tiempo medio de adopción por color de gato, obtenidos a partir de tres modelos distintos:
-
-1. Modelo **sin censura**: solo considera gatos adoptados.
-2. Modelo **con censura**: incorpora gatos que aún no han sido adoptados.
-3. Modelo **con censura + ajuste por edad**: considera censura y controla por edad al ingreso.
-
-```{r}
-# Preparar resumen de los tres modelos dinámicamente
-results_tbl_nc <- tibble(
-  Modelo = "Sin censura",
-  Color = c("Negro", "Otro"),
-  Media = c(mean(mu_negro_nc), mean(mu_otro_nc)),
-  `IC 89% Inferior` = c(quantile(mu_negro_nc, 0.055), quantile(mu_otro_nc, 0.055)),
-  `IC 89% Superior` = c(quantile(mu_negro_nc, 0.945), quantile(mu_otro_nc, 0.945))
-)
-
-results_tbl_cens <- tibble(
-  Modelo = "Con censura",
-  Color = c("Negro", "Otro"),
-  Media = c(mean(mu_negro_cens), mean(mu_otro_cens)),
-  `IC 89% Inferior` = c(quantile(mu_negro_cens, 0.055), quantile(mu_otro_cens, 0.055)),
-  `IC 89% Superior` = c(quantile(mu_negro_cens, 0.945), quantile(mu_otro_cens, 0.945))
-)
-
-results_tbl_edad <- tibble(
-  Modelo = "Con censura y edad",
-  Color = c("Negro", "Otro"),
-  Media = c(mean(mu_negro), mean(mu_otro)),
-  `IC 89% Inferior` = c(quantile(mu_negro, 0.055), quantile(mu_otro, 0.055)),
-  `IC 89% Superior` = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
-)
-
-results_comp <- bind_rows(results_tbl_nc, results_tbl_cens, results_tbl_edad)
-print(results_comp)
-```
-
-Esta tabla permite observar cómo la inclusión de casos censurados y el control por edad afectan las estimaciones del tiempo medio de adopción. Se destaca que los gatos negros presentan sistemáticamente tiempos medios de adopción mayores que los de otros colores, y que omitir la censura tiende a subestimar dichos tiempos.
 
 ## Conclusiones
 
