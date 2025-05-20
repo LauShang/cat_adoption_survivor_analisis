@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.433">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -23,7 +23,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -34,7 +34,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -71,13 +71,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="final_files/libs/quarto-diagram/mermaid.min.js"></script>
 <script src="final_files/libs/quarto-diagram/mermaid-init.js"></script>
 <link href="final_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
-<script src="final_files/libs/htmlwidgets-1.6.3/htmlwidgets.js"></script>
+<script src="final_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
 <script src="final_files/libs/viz-1.8.2/viz.js"></script>
 <link href="final_files/libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet">
 <script src="final_files/libs/grViz-binding-1.0.11/grViz.js"></script>
+<link href="final_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -115,7 +143,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
+
 
 <section id="proyecto-final" class="level1">
 <h1>Proyecto Final</h1>
@@ -145,13 +175,21 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
 <p>Se creó una variable binaria <em>color_group</em> que clasifica a los gatos como “Black” si su color es exactamente negro, y “Other” en cualquier otro caso. A partir de esta variable, se calculó la proporción de cada grupo: 13.3% de los gatos son negros y 86.7% de otro color. La gráfica de barras resultante ilustra estas proporciones, destacando visualmente la menor representación de gatos negros en el refugio.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="final_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="final_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Siguiendo el tratamiento propuesto por McElreath, se transformó la variable <em>out_event</em> en dos indicadores binarios: adopted, que toma el valor 1 si el gato fue adoptado, y censored, que toma el valor 1 si el evento fue distinto a adopción. Este enfoque permite distinguir entre observaciones completas y censuradas, lo cual es fundamental en modelos de supervivencia.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="final_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="final_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>En este caso, el 50.8% de los gatos fueron adoptados, mientras que el 49.2% fueron censurados. Estos últimos incluyen tanto a los gatos que permanecen en el refugio como a aquellos que salieron por otras razones. Esta proporción cercana al 50% resalta la importancia de incorporar adecuadamente la censura por la derecha para evitar sesgos en la estimación de los tiempos de espera hasta la adopción.</p>
@@ -176,8 +214,8 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>, <span class="at">width =</span> <span class="dv">400</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="htmlwidget-446485e0e1d5913e0baf" style="width:100%;height:780px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-446485e0e1d5913e0baf">{"x":{"diagram":"\ndigraph {\n  graph [ranksep = 0.2, rankdir = LR]\n  node [shape=plaintext]\n  U [shape=circle]\n  Color\n  Days\n  Adoption\n  edge [minlen = 3]\n  U -> Adoption\n  Color -> Adoption\n  Adoption -> Days\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-284fcc379be16f9e8794" style="width:100%;height:780px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-284fcc379be16f9e8794">{"x":{"diagram":"\ndigraph {\n  graph [ranksep = 0.2, rankdir = LR]\n  node [shape=plaintext]\n  U [shape=circle]\n  Color\n  Days\n  Adoption\n  edge [minlen = 3]\n  U -> Adoption\n  Color -> Adoption\n  Adoption -> Days\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>En este DAG:</p>
@@ -219,7 +257,7 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Tiempo observado es igual al real si fue adoptado, o censurado artificialmente</span></span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Para simplificar, no truncamos el tiempo observado</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  adopted <span class="ot">&lt;-</span> 1L <span class="sc">-</span> censored</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  adopted <span class="ot">&lt;-</span> <span class="dv">1</span>L <span class="sc">-</span> censored</span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  time_obs <span class="ot">&lt;-</span> time_true  <span class="co"># todos los tiempos son observados hasta ese punto</span></span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
@@ -235,7 +273,11 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
 </div>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="final_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="final_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">
@@ -260,8 +302,8 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="grViz html-widget html-fill-item" id="htmlwidget-86c02659c960b265dc68" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-86c02659c960b265dc68">{"x":{"diagram":"\n  digraph {\n    graph [rankdir=LR, nodesep=1]\n    node [shape=box, style=filled, fillcolor=LightGray]\n    color_id [label=\"color_id\"]\n    mu [label=\"mu\"]\n    lambda [label=\"lambda\"]\n    time_true [label=\"time_true\"]\n    time_obs [label=\"time_obs\"]\n    adopted [label=\"adopted\"]\n    censored [label=\"censored\"]\n\n    color_id -> mu\n    mu -> lambda\n    lambda -> time_true\n    time_true -> time_obs\n    time_obs -> adopted\n    time_obs -> censored\n  }\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-d31fb49ccc867bda7a81" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-d31fb49ccc867bda7a81">{"x":{"diagram":"\n  digraph {\n    graph [rankdir=LR, nodesep=1]\n    node [shape=box, style=filled, fillcolor=LightGray]\n    color_id [label=\"color_id\"]\n    mu [label=\"mu\"]\n    lambda [label=\"lambda\"]\n    time_true [label=\"time_true\"]\n    time_obs [label=\"time_obs\"]\n    adopted [label=\"adopted\"]\n    censored [label=\"censored\"]\n\n    color_id -> mu\n    mu -> lambda\n    lambda -> time_true\n    time_true -> time_obs\n    time_obs -> adopted\n    time_obs -> censored\n  }\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div class="cell">
@@ -278,13 +320,14 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>, <span class="at">width =</span> <span class="dv">400</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="htmlwidget-35cdc7c0c0fd4d8bcd43" style="width:100%;height:780px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-35cdc7c0c0fd4d8bcd43">{"x":{"diagram":"\ndigraph {\n  graph [ranksep = 0.2, rankdir = LR]\n  node [shape=plaintext]\n  Color\n  Days\n  Adoption\n  edge [minlen = 3]\n  Color -> Adoption\n  Adoption -> Days\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e1972d94b55b791d47f8" style="width:100%;height:780px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e1972d94b55b791d47f8">{"x":{"diagram":"\ndigraph {\n  graph [ranksep = 0.2, rankdir = LR]\n  node [shape=plaintext]\n  Color\n  Days\n  Adoption\n  edge [minlen = 3]\n  Color -> Adoption\n  Adoption -> Days\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-<div class="cell">
+<div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
+<p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">graph LR
     U((U)) --&gt; A
@@ -301,6 +344,7 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
     %%{init: {'config': {'rankSpacing': 20}}}%%
 </pre>
 </div>
+<p></p></figure><p></p>
 </div>
 </div>
 </div>
@@ -323,65 +367,57 @@ $ intake_age    &lt;int&gt; 7, 1, 2, 12, 1, 1, 2, 24, 1, 3, 4, 12, 1, 7, 0, 12, 
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="grViz html-widget html-fill-item" id="htmlwidget-fea26355915a838b1c1e" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-fea26355915a838b1c1e">{"x":{"diagram":"\ndigraph {\n  graph [ranksep=0.5, rankdir=LR]\n  node [shape=box, fontname=Helvetica]\n\n  Color [label=\"Color ID\"]\n  mu [label=\"μᵢ (mean time)\", shape=ellipse]\n  lambda [label=\"λᵢ (rate)\", shape=ellipse]\n  A [label=\"Aᵢ (Adopted or Censored)\"]\n  D [label=\"Dᵢ (Time to Event)\"]\n\n  Color -> mu\n  mu -> lambda\n  lambda -> D\n  A -> D\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-537ac082f65bd3c89489" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-537ac082f65bd3c89489">{"x":{"diagram":"\ndigraph {\n  graph [ranksep=0.5, rankdir=LR]\n  node [shape=box, fontname=Helvetica]\n\n  Color [label=\"Color ID\"]\n  mu [label=\"μᵢ (mean time)\", shape=ellipse]\n  lambda [label=\"λᵢ (rate)\", shape=ellipse]\n  A [label=\"Aᵢ (Adopted or Censored)\"]\n  D [label=\"Dᵢ (Time to Event)\"]\n\n  Color -> mu\n  mu -> lambda\n  lambda -> D\n  A -> D\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
 </section>
 <section id="modelo-de-adopción-por-color" class="level2">
 <h2 class="anchored" data-anchor-id="modelo-de-adopción-por-color">Modelo de adopción por color</h2>
+<p>En este modelo de supervivencia exponencial, analizamos el efecto del color del gato sobre el tiempo que tarda en ser adoptado, modelando dicho tiempo como una variable aleatoria con distribución exponencial cuya tasa depende del color del gato. Una ventaja de este enfoque es que permite incorporar no solo a los gatos que fueron adoptados, sino también a aquellos que no lo fueron durante el periodo de observación. A estos últimos se les considera como casos censurados, es decir, sabemos cuántos días estuvieron en el refugio sin ser adoptados, pero no conocemos el tiempo total que habrían esperado si hubieran permanecido más tiempo. Al incorporar esta información de censura en el modelo, se aprovecha mejor la evidencia disponible y se evitan sesgos en la estimación del tiempo medio de adopción por color. La inferencia se realiza bajo un enfoque bayesiano utilizando Stan.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>cats <span class="ot">&lt;-</span> cats <span class="sc">|&gt;</span> </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">color_id =</span> <span class="fu">if_else</span>(color <span class="sc">==</span> <span class="st">"Black"</span>, 1L, 2L),</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">days =</span> <span class="fu">as.numeric</span>(days_to_event)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>dat_stan_simple <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(cats),</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">days =</span> cats<span class="sc">$</span>days,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> cats<span class="sc">$</span>color_id</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>stan_model_code_simple <span class="ot">&lt;-</span> <span class="st">"</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; days[N];</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1,upper=2&gt; color[N];</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[2] alpha;</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="st">  for (i in 1:N) {</span></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="st">    real mu = exp(alpha[color[i]]);</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="st">    days[i] ~ exponential(1 / mu);</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>compiled_model_simple <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">stan_model</span>(<span class="at">model_code =</span> stan_model_code_simple)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Trying to compile a simple C file</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
-using C compiler: ‘Apple clang version 17.0.0 (clang-1700.0.13.3)’
-using SDK: ‘MacOSX15.4.sdk’
-clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DUSE_STANC3 -DSTRICT_R_HEADERS  -DBOOST_PHOENIX_NO_VARIADIC_EXPRESSION  -D_HAS_AUTO_PTR_ETC=0  -include '/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
-In file included from &lt;built-in&gt;:1:
-In file included from /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp:22:
-In file included from /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
-In file included from /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/Eigen/Core:19:
-/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:679:10: fatal error: 'cmath' file not found
-  679 | #include &lt;cmath&gt;
-      |          ^~~~~~~
-1 error generated.
-make: *** [foo.o] Error 1</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fit_simple <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">sampling</span>(compiled_model_simple, <span class="at">data =</span> dat_stan_simple,</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                              <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">cores =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">2000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Preparar datos incluyendo censura</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>cats <span class="ot">&lt;-</span> cats <span class="sc">|&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">color_id =</span> <span class="fu">if_else</span>(color <span class="sc">==</span> <span class="st">"Black"</span>, <span class="dv">1</span>L, <span class="dv">2</span>L),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">adopted =</span> <span class="fu">if_else</span>(out_event <span class="sc">==</span> <span class="st">"Adoption"</span>, <span class="dv">1</span>L, <span class="dv">0</span>L),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">days =</span> <span class="fu">as.numeric</span>(days_to_event)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>dat_stan_cens <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(cats),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">days =</span> cats<span class="sc">$</span>days,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> cats<span class="sc">$</span>color_id,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">adopted =</span> cats<span class="sc">$</span>adopted</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Modelo Stan que considera censura</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>stan_code_cens <span class="ot">&lt;-</span> <span class="st">"</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; days[N];</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1,upper=2&gt; color[N];</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=0,upper=1&gt; adopted[N];</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[2] alpha;</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="st">  for (i in 1:N) {</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="st">    real lambda = exp(-alpha[color[i]]);</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="st">    if (adopted[i] == 1)</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="st">      target += exponential_lpdf(days[i] | lambda);</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="st">    else</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="st">      target += exponential_lccdf(days[i] | lambda);</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Compilar y ajustar</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>compiled_cens <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">stan_model</span>(<span class="at">model_code =</span> stan_code_cens)</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>fit_cens <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">sampling</span>(compiled_cens, <span class="at">data =</span> dat_stan_cens,</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>                            <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">2000</span>, <span class="at">cores =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Found more than one class "stanfit" in cache; using the first, from namespace 'rethinking'</code></pre>
 </div>
@@ -406,67 +442,101 @@ make: *** [foo.o] Error 1</code></pre>
 <div class="cell-output cell-output-stderr">
 <pre><code>Also defined by 'rstan'</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>post_simple <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(fit_simple)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>mu_negro_simple <span class="ot">&lt;-</span> <span class="fu">exp</span>(post_simple<span class="sc">$</span><span class="st">`</span><span class="at">alpha[1]</span><span class="st">`</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>mu_otro_simple  <span class="ot">&lt;-</span> <span class="fu">exp</span>(post_simple<span class="sc">$</span><span class="st">`</span><span class="at">alpha[2]</span><span class="st">`</span>)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Color =</span> <span class="fu">c</span>(<span class="st">"Negro"</span>, <span class="st">"Otro"</span>),</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Media =</span> <span class="fu">c</span>(<span class="fu">mean</span>(mu_negro_simple), <span class="fu">mean</span>(mu_otro_simple)),</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">IC 89% Inferior</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro_simple, <span class="fl">0.055</span>), <span class="fu">quantile</span>(mu_otro_simple, <span class="fl">0.055</span>)),</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">IC 89% Superior</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro_simple, <span class="fl">0.945</span>), <span class="fu">quantile</span>(mu_otro_simple, <span class="fl">0.945</span>))</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>post_cens <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(fit_cens)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>mu_negro_cens <span class="ot">&lt;-</span> <span class="fu">exp</span>(post_cens<span class="sc">$</span><span class="st">`</span><span class="at">alpha[1]</span><span class="st">`</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>mu_otro_cens  <span class="ot">&lt;-</span> <span class="fu">exp</span>(post_cens<span class="sc">$</span><span class="st">`</span><span class="at">alpha[2]</span><span class="st">`</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>results_tbl_cens <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Color =</span> <span class="fu">c</span>(<span class="st">"Negro"</span>, <span class="st">"Otro"</span>),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Media =</span> <span class="fu">c</span>(<span class="fu">mean</span>(mu_negro_cens), <span class="fu">mean</span>(mu_otro_cens)),</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">IC 89% Inferior</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro_cens, <span class="fl">0.055</span>), <span class="fu">quantile</span>(mu_otro_cens, <span class="fl">0.055</span>)),</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">IC 89% Superior</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro_cens, <span class="fl">0.945</span>), <span class="fu">quantile</span>(mu_otro_cens, <span class="fl">0.945</span>))</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(results_tbl_cens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 4
   Color Media `IC 89% Inferior` `IC 89% Superior`
   &lt;chr&gt; &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
-1 Negro  28.1              27.3              28.9
-2 Otro   24.8              24.5              25.0</code></pre>
+1 Negro  57.6              55.2              60.1
+2 Otro   48.5              47.7              49.2</code></pre>
 </div>
 </div>
-<p>El modelo de supervivencia exponencial indica que los gatos negros tardan, en promedio, más días en ser adoptados (28.1 días) en comparación con gatos de otros colores (24.8 días). Sin embargo, este resultado se basa únicamente en la variable observable del color. De acuerdo con el diagrama causal propuesto, existen factores no observados —como el comportamiento del gato, la actitud del adoptante o el estado de salud— que también podrían influir en la tasa de adopción. Por tanto, esta diferencia podría no deberse exclusivamente al color, sino a variables latentes no incluidas en el modelo actual.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(results_tbl_cens, <span class="fu">aes</span>(<span class="at">x =</span> Color, <span class="at">y =</span> Media, <span class="at">fill =</span> Color)) <span class="sc">+</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.5</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> <span class="st">`</span><span class="at">IC 89% Inferior</span><span class="st">`</span>, <span class="at">ymax =</span> <span class="st">`</span><span class="at">IC 89% Superior</span><span class="st">`</span>), <span class="at">width =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Tiempo medio de adopción por color"</span>,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Tiempo medio (días)"</span>, <span class="at">x =</span> <span class="st">"Color del gato"</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Negro"</span> <span class="ot">=</span> <span class="st">"black"</span>, <span class="st">"Otro"</span> <span class="ot">=</span> <span class="st">"gray70"</span>)) <span class="sc">+</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="final_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Los resultados muestran que, en promedio, los gatos negros tardan más en ser adoptados que los de otros colores. Este patrón sugiere que el color del gato podría estar asociado con un menor ritmo de adopción, aunque es importante considerar que pueden existir otros factores no observados que también influyen en este proceso.</p>
 </section>
 <section id="ajuste-controlando-la-variable-edad" class="level2">
 <h2 class="anchored" data-anchor-id="ajuste-controlando-la-variable-edad">Ajuste controlando la variable edad</h2>
-<p>Para estimar de manera más precisa el efecto del color del gato sobre el tiempo de adopción, se incluyó la edad al ingreso como variable de control en el modelo de supervivencia. Esto permite separar el efecto del color del posible sesgo que podría generarse si, por ejemplo, los gatos negros fueran sistemáticamente más jóvenes o mayores que los de otros colores.</p>
+<p>Para estimar de forma más realista el efecto del color del gato sobre el tiempo de adopción, se construyó un modelo de supervivencia exponencial que controla por la edad al ingreso y además considera la censura a la derecha. Esto permite diferenciar entre gatos que fueron efectivamente adoptados y aquellos que no lo fueron durante el periodo de observación.</p>
+<p>Se asume que el tiempo hasta la adopción sigue una distribución exponencial con una tasa específica para cada gato. Esta tasa depende del color del pelaje y la edad al ingreso. En los casos en que el evento no se observa (censura), se modela la probabilidad de no adopción hasta el día observado usando la función de supervivencia de la distribución exponencial.</p>
+<p>Este enfoque permite estimar con mayor precisión el efecto del color, aislando posibles confusiones derivadas de diferencias sistemáticas en edad entre grupos. Así se evita atribuir al color lo que en realidad podría ser efecto de la edad.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>cats <span class="ot">&lt;-</span> cats <span class="sc">|&gt;</span> </span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(intake_age)) <span class="sc">|&gt;</span> </span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">color_id =</span> <span class="fu">if_else</span>(color <span class="sc">==</span> <span class="st">"Black"</span>, 1L, 2L),</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_std =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(intake_age)),  <span class="co"># edad estandarizada</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">days =</span> <span class="fu">as.numeric</span>(days_to_event)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>dat_stan <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(cats),</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">days =</span> cats<span class="sc">$</span>days,</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> cats<span class="sc">$</span>color_id,</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">age =</span> cats<span class="sc">$</span>age_std</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Modelo stan</span></span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>stan_model_code <span class="ot">&lt;-</span> <span class="st">"</span></span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; days[N];</span></span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1,upper=2&gt; color[N];</span></span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="st">  real age[N];</span></span>
-<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
-<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[2] alpha;</span></span>
-<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="st">  real beta_age;</span></span>
-<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
-<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a><span class="st">  for (i in 1:N) {</span></span>
-<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a><span class="st">    real mu = exp(alpha[color[i]] + beta_age * age[i]);</span></span>
-<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a><span class="st">    days[i] ~ exponential(1 / mu);</span></span>
-<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
-<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span>
-<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>compiled_model <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">stan_model</span>(<span class="at">model_code =</span> stan_model_code)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Preparar los datos</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>cats <span class="ot">&lt;-</span> cats <span class="sc">|&gt;</span> </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(intake_age)) <span class="sc">|&gt;</span> </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">color_id =</span> <span class="fu">if_else</span>(color <span class="sc">==</span> <span class="st">"Black"</span>, <span class="dv">1</span>L, <span class="dv">2</span>L),</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_std =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(intake_age)),  <span class="co"># edad estandarizada</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">days =</span> <span class="fu">as.numeric</span>(days_to_event),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">adopted =</span> <span class="fu">if_else</span>(out_event <span class="sc">==</span> <span class="st">"Adoption"</span>, <span class="dv">1</span>L, <span class="dv">0</span>L)  <span class="co"># 1 = adoptado, 0 = censurado</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>dat_stan <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(cats),</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">days =</span> cats<span class="sc">$</span>days,</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> cats<span class="sc">$</span>color_id,</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">age =</span> cats<span class="sc">$</span>age_std,</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">adopted =</span> cats<span class="sc">$</span>adopted</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Modelo Stan con censura (usando funciones ya incluidas en Stan)</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>stan_model_code <span class="ot">&lt;-</span> <span class="st">"</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; days[N];</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1,upper=2&gt; color[N];</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a><span class="st">  real age[N];</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=0,upper=1&gt; adopted[N];</span></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[2] alpha;</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a><span class="st">  real beta_age;</span></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a><span class="st">  for (i in 1:N) {</span></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a><span class="st">    real mu = exp(alpha[color[i]] + beta_age * age[i]);</span></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a><span class="st">    real lambda = 1 / mu;</span></span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a><span class="st">    if (adopted[i] == 1)</span></span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a><span class="st">      target += exponential_lpdf(days[i] | lambda);</span></span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a><span class="st">    else</span></span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a><span class="st">      target += exponential_lccdf(days[i] | lambda);</span></span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a>compiled_model <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">stan_model</span>(<span class="at">model_code =</span> stan_model_code)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Found more than one class "stanfit" in cache; using the first, from namespace 'rethinking'</code></pre>
 </div>
@@ -479,30 +549,10 @@ make: *** [foo.o] Error 1</code></pre>
 <div class="cell-output cell-output-stderr">
 <pre><code>Also defined by 'rstan'</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">sampling</span>(compiled_model, <span class="at">data =</span> dat_stan, <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">cores =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">2000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Trying to compile a simple C file</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
-using C compiler: ‘Apple clang version 17.0.0 (clang-1700.0.13.3)’
-using SDK: ‘MacOSX15.4.sdk’
-clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DUSE_STANC3 -DSTRICT_R_HEADERS  -DBOOST_PHOENIX_NO_VARIADIC_EXPRESSION  -D_HAS_AUTO_PTR_ETC=0  -include '/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
-In file included from &lt;built-in&gt;:1:
-In file included from /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp:22:
-In file included from /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
-In file included from /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/Eigen/Core:19:
-/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:679:10: fatal error: 'cmath' file not found
-  679 | #include &lt;cmath&gt;
-      |          ^~~~~~~
-1 error generated.
-make: *** [foo.o] Error 1</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">sampling</span>(compiled_model, <span class="at">data =</span> dat_stan, <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">cores =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">2000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Found more than one class "stanfit" in cache; using the first, from namespace 'rethinking'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Also defined by 'rstan'</code></pre>
+<pre><code>Found more than one class "stanfit" in cache; using the first, from namespace 'rethinking'
+Also defined by 'rstan'</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Found more than one class "stanfit" in cache; using the first, from namespace 'rethinking'</code></pre>
@@ -522,100 +572,84 @@ make: *** [foo.o] Error 1</code></pre>
 <div class="cell-output cell-output-stderr">
 <pre><code>Also defined by 'rstan'</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>post <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(fit)</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>mean_age <span class="ot">&lt;-</span> <span class="fu">mean</span>(cats<span class="sc">$</span>age_std, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calcular medias esperadas controlando por edad media</span></span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>mu_negro <span class="ot">&lt;-</span> <span class="fu">exp</span>(post<span class="sc">$</span><span class="st">`</span><span class="at">alpha[1]</span><span class="st">`</span> <span class="sc">+</span> post<span class="sc">$</span>beta_age <span class="sc">*</span> mean_age)</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>mu_otro  <span class="ot">&lt;-</span> <span class="fu">exp</span>(post<span class="sc">$</span><span class="st">`</span><span class="at">alpha[2]</span><span class="st">`</span> <span class="sc">+</span> post<span class="sc">$</span>beta_age <span class="sc">*</span> mean_age)</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Color =</span> <span class="fu">c</span>(<span class="st">"Negro"</span>, <span class="st">"Otro"</span>),</span>
-<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Media =</span> <span class="fu">c</span>(<span class="fu">mean</span>(mu_negro), <span class="fu">mean</span>(mu_otro)),</span>
-<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">IC 89% Inferior</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro, <span class="fl">0.055</span>), <span class="fu">quantile</span>(mu_otro, <span class="fl">0.055</span>)),</span>
-<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">IC 89% Superior</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro, <span class="fl">0.945</span>), <span class="fu">quantile</span>(mu_otro, <span class="fl">0.945</span>))</span>
-<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 4
-  Color Media `IC 89% Inferior` `IC 89% Superior`
-  &lt;chr&gt; &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
-1 Negro  28.4              27.6              29.2
-2 Otro   24.5              24.2              24.7</code></pre>
-</div>
-</div>
-<p>Después de ajustar por la edad de los gatos, se encuentra evidencia de que los gatos negros tardan más tiempo en ser adoptados en comparación con gatos de otros colores:</p>
-<p>El tiempo medio estimado de adopción para gatos negros es de aproximadamente 28.4 días, mientras que para otros gatos es de 24.5 días (IC 89%: 24.2 – 24.7).</p>
-<p>Esto sugiere que, controlando por edad, el color negro se asocia con un menor ritmo de adopción, lo cual puede reflejar sesgos o preferencias en el comportamiento de adopción por parte del público.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>results_tbl <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Color =</span> <span class="fu">c</span>(<span class="st">"Negro"</span>, <span class="st">"Otro"</span>),</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Media =</span> <span class="fu">c</span>(<span class="fu">mean</span>(mu_negro), <span class="fu">mean</span>(mu_otro)),</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">IC_Inf =</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro, <span class="fl">0.055</span>), <span class="fu">quantile</span>(mu_otro, <span class="fl">0.055</span>)),</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">IC_Sup =</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro, <span class="fl">0.945</span>), <span class="fu">quantile</span>(mu_otro, <span class="fl">0.945</span>))</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Gráfica</span></span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(results_tbl, <span class="fu">aes</span>(<span class="at">x =</span> Color, <span class="at">y =</span> Media, <span class="at">fill =</span> Color)) <span class="sc">+</span></span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.5</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> IC_Inf, <span class="at">ymax =</span> IC_Sup), <span class="at">width =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
-<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Tiempo medio de adopción por color (ajustado por edad)"</span>,</span>
-<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Tiempo medio (días)"</span>, <span class="at">x =</span> <span class="st">"Color del gato"</span></span>
-<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Negro"</span> <span class="ot">=</span> <span class="st">"black"</span>, <span class="st">"Otro"</span> <span class="ot">=</span> <span class="st">"gray70"</span>)) <span class="sc">+</span></span>
-<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>post <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(fit)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluación a edad promedio</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>mean_age <span class="ot">&lt;-</span> <span class="fu">mean</span>(cats<span class="sc">$</span>age_std, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>mu_negro <span class="ot">&lt;-</span> <span class="fu">exp</span>(post<span class="sc">$</span><span class="st">`</span><span class="at">alpha[1]</span><span class="st">`</span> <span class="sc">+</span> post<span class="sc">$</span>beta_age <span class="sc">*</span> mean_age)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>mu_otro  <span class="ot">&lt;-</span> <span class="fu">exp</span>(post<span class="sc">$</span><span class="st">`</span><span class="at">alpha[2]</span><span class="st">`</span> <span class="sc">+</span> post<span class="sc">$</span>beta_age <span class="sc">*</span> mean_age)</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Tabla resumen</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>results_tbl <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">Color =</span> <span class="fu">c</span>(<span class="st">"Negro"</span>, <span class="st">"Otro"</span>),</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Media =</span> <span class="fu">c</span>(<span class="fu">mean</span>(mu_negro), <span class="fu">mean</span>(mu_otro)),</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">IC_Inf =</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro, <span class="fl">0.055</span>), <span class="fu">quantile</span>(mu_otro, <span class="fl">0.055</span>)),</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">IC_Sup =</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mu_negro, <span class="fl">0.945</span>), <span class="fu">quantile</span>(mu_otro, <span class="fl">0.945</span>))</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(results_tbl, <span class="fu">aes</span>(<span class="at">x =</span> Color, <span class="at">y =</span> Media, <span class="at">fill =</span> Color)) <span class="sc">+</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.5</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> IC_Inf, <span class="at">ymax =</span> IC_Sup), <span class="at">width =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Tiempo medio de adopción por color y edad "</span>,</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Tiempo medio (días)"</span>, <span class="at">x =</span> <span class="st">"Color del gato"</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Negro"</span> <span class="ot">=</span> <span class="st">"black"</span>, <span class="st">"Otro"</span> <span class="ot">=</span> <span class="st">"gray70"</span>)) <span class="sc">+</span></span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="final_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="final_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Con estos resultados vemos que los gatos negros tienden a tardar más en ser adoptados, lo cual respalda la hipótesis de que el color podría influir en las decisiones de adopción, aunque no necesariamente sea el único factor causal</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grViz</span>(<span class="st">"</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="st">digraph {</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="st">  graph [rankdir=LR]</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="st">  node [shape=box, style=filled, fillcolor=LightGray, fontname=Helvetica]</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="st">  Color     [label='Color del gato']</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad      [label='Edad al ingreso']</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="st">  Mu        [label='μᵢ (tiempo medio)', shape=ellipse]</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="st">  Lambda    [label='λᵢ (tasa)', shape=ellipse]</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="st">  Dias      [label='Dᵢ (Tiempo hasta adopción)']</span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="st">  Estado    [label='Aᵢ (Adoptado o Censurado)']</span></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a><span class="st">  Color -&gt; Mu</span></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad  -&gt; Mu</span></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a><span class="st">  Mu -&gt; Lambda</span></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a><span class="st">  Lambda -&gt; Dias</span></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a><span class="st">  Estado -&gt; Dias</span></span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="grViz html-widget html-fill-item" id="htmlwidget-4e9ddbccfb375c606aaa" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-4e9ddbccfb375c606aaa">{"x":{"diagram":"\ndigraph {\n  graph [rankdir=LR]\n  node [shape=box, style=filled, fillcolor=LightGray, fontname=Helvetica]\n\n  Color     [label=\"Color del gato\"]\n  Edad      [label=\"Edad al ingreso\"]\n  Mu        [label=\"μᵢ (tiempo medio)\", shape=ellipse]\n  Lambda    [label=\"λᵢ (tasa)\", shape=ellipse]\n  Dias      [label=\"Dᵢ (Tiempo hasta adopción)\"]\n  Estado    [label=\"Aᵢ (Adoptado o Censurado)\"]\n\n  Color -> Mu\n  Edad  -> Mu\n  Mu -> Lambda\n  Lambda -> Dias\n  Estado -> Dias\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grViz</span>(<span class="st">"</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="st">digraph {</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="st">  graph [rankdir=LR]</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="st">  node [shape=box, style=filled, fillcolor=LightGray, fontname=Helvetica]</span></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="st">  Color     [label='Color del gato']</span></span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad      [label='Edad al ingreso']</span></span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="st">  Mu        [label='μᵢ (tiempo medio)', shape=ellipse]</span></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="st">  Lambda    [label='λᵢ (tasa)', shape=ellipse]</span></span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a><span class="st">  Dias      [label='Dᵢ (Tiempo hasta adopción)']</span></span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="st">  Estado    [label='Aᵢ (Adoptado o Censurado)']</span></span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a><span class="st">  Color -&gt; Mu</span></span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad  -&gt; Mu</span></span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a><span class="st">  Mu -&gt; Lambda</span></span>
-<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="st">  Lambda -&gt; Dias</span></span>
-<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a><span class="st">  Estado -&gt; Dias</span></span>
-<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grViz</span>(<span class="st">"</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="st">digraph {</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="st">  graph [rankdir=LR]</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="st">  node [shape=plaintext, fontname=Helvetica]</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="st">  Color</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="st">  Tasa</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="st">  Tiempo</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="st">  Color -&gt; Tasa</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad  -&gt; Tasa</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="st">  Tasa  -&gt; Tiempo</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="grViz html-widget html-fill-item" id="htmlwidget-c329af58135e81f315d0" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-c329af58135e81f315d0">{"x":{"diagram":"\ndigraph {\n  graph [rankdir=LR]\n  node [shape=box, style=filled, fillcolor=LightGray, fontname=Helvetica]\n\n  Color     [label=\"Color del gato\"]\n  Edad      [label=\"Edad al ingreso\"]\n  Mu        [label=\"μᵢ (tiempo medio)\", shape=ellipse]\n  Lambda    [label=\"λᵢ (tasa)\", shape=ellipse]\n  Dias      [label=\"Dᵢ (Tiempo hasta adopción)\"]\n  Estado    [label=\"Aᵢ (Adoptado o Censurado)\"]\n\n  Color -> Mu\n  Edad  -> Mu\n  Mu -> Lambda\n  Lambda -> Dias\n  Estado -> Dias\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grViz</span>(<span class="st">"</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="st">digraph {</span></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="st">  graph [rankdir=LR]</span></span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="st">  node [shape=plaintext, fontname=Helvetica]</span></span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="st">  Color</span></span>
-<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad</span></span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a><span class="st">  Tasa</span></span>
-<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="st">  Tiempo</span></span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="st">  Color -&gt; Tasa</span></span>
-<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="st">  Edad  -&gt; Tasa</span></span>
-<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a><span class="st">  Tasa  -&gt; Tiempo</span></span>
-<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div class="grViz html-widget html-fill-item" id="htmlwidget-41ae5f264bcdca9660ea" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-41ae5f264bcdca9660ea">{"x":{"diagram":"\ndigraph {\n  graph [rankdir=LR]\n  node [shape=plaintext, fontname=Helvetica]\n\n  Color\n  Edad\n  Tasa\n  Tiempo\n\n  Color -> Tasa\n  Edad  -> Tasa\n  Tasa  -> Tiempo\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-2cb125f71266a47c7d91" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-2cb125f71266a47c7d91">{"x":{"diagram":"\ndigraph {\n  graph [rankdir=LR]\n  node [shape=plaintext, fontname=Helvetica]\n\n  Color\n  Edad\n  Tasa\n  Tiempo\n\n  Color -> Tasa\n  Edad  -> Tasa\n  Tasa  -> Tiempo\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -658,18 +692,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -701,11 +724,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -715,8 +777,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -728,7 +799,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -772,6 +966,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -797,6 +992,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -857,6 +1078,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

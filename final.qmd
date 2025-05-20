@@ -14,7 +14,6 @@ library(rethinking)
 library(DiagrammeR)
 library(tidyverse)
 library(dplyr)
-
 ```
 
 ## Introducción
@@ -32,7 +31,7 @@ glimpse(cats)
 ```
 ## Tratamiento de variables
 
-Se creó una variable binaria _color_group_ que clasifica a los gatos como "Black" si su color es exactamente negro, y "Other" en cualquier otro caso. A partir de esta variable, se calculó la proporción de cada grupo: 13.3% de los gatos son negros y 86.7% de otro color. La gráfica de barras resultante ilustra estas proporciones, destacando visualmente la menor representación de gatos negros en el refugio.
+Se creó una variable binaria _color_group_ que clasifica a los gatos como "Negro" si su color es exactamente negro, y "Otro" en cualquier otro caso. A partir de esta variable, se calculó la proporción de cada grupo: 13.3% de los gatos son negros y 86.7% de otro color. La gráfica de barras resultante ilustra estas proporciones, destacando visualmente la menor representación de gatos negros en el refugio.
 
 ```{r, echo=FALSE}
 # Variable binaria
@@ -63,7 +62,7 @@ ggplot(color_summary, aes(x = color_group, y = porcentaje, fill = color_group)) 
 
 ```
 
-Siguiendo el tratamiento propuesto por McElreath, se transformó la variable _out_event_ en dos indicadores binarios: adopted, que toma el valor 1 si el gato fue adoptado, y censored, que toma el valor 1 si el evento fue distinto a adopción. Este enfoque permite distinguir entre observaciones completas y censuradas, lo cual es fundamental en modelos de supervivencia.
+Siguiendo el tratamiento propuesto por McElreath, se transformó la variable _out_event_ en dos indicadores binarios: adopted, que toma el valor 1 si el gato fue adoptado, y censored, que toma el valor 0 si el evento fue distinto a adopción. Este enfoque permite distinguir entre observaciones completas y censuradas, lo cual es fundamental en modelos de supervivencia.
 
 ```{r, echo=FALSE, warning=FALSE}
 cats <- cats |>
