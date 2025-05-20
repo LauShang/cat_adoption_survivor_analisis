@@ -48,7 +48,15 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+<<<<<<< HEAD
 #DSfiles
 .DS_Store
 final_files/.DS_Store
 final_files/libs/.DS_Store
+=======
+# USER
+*.html
+final_cache
+final_files
+.DS_Store
+>>>>>>> 9ed28f1aa021d7ec0c8e1a08ca88956b20f9b396
