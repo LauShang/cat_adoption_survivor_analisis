@@ -52,3 +52,4 @@ rsconnect/
 *.html
 final_cache
 final_files
+.DS_Store
