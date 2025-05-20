@@ -257,26 +257,11 @@ km_tbl %>%
 
 Las 10 replicaciones muestran de forma consistente que los gatos negros tienden a permanecer más tiempo sin ser adoptados en comparación con los de otros colores. Aunque hay variabilidad entre simulaciones, la mayoría de las curvas para gatos negros se ubican por encima, indicando una mayor probabilidad de seguir sin adoptar en cada punto del tiempo. 
 
-## Modelo considerando color con censura
+### Modelo STAN
 
-En este modelo de supervivencia exponencial, analizamos el efecto del color del gato sobre el tiempo que tarda en ser adoptado, modelando dicho tiempo como una variable aleatoria con distribución exponencial cuya tasa depende del color del gato. Una ventaja de este enfoque es que permite incorporar no solo a los gatos que fueron adoptados, sino también a aquellos que no lo fueron durante el periodo de observación. A estos últimos se les considera como casos censurados, es decir, sabemos cuántos días estuvieron en el refugio sin ser adoptados, pero no conocemos el tiempo total que habrían esperado si hubieran permanecido más tiempo. Al incorporar esta información de censura en el modelo, se aprovecha mejor la evidencia disponible y se evitan sesgos en la estimación del tiempo medio de adopción por color. La inferencia se realiza bajo un enfoque bayesiano utilizando Stan.
+Al incorporar esta información de censura en el modelo, se aprovecha mejor la evidencia disponible y se evitan sesgos en la estimación del tiempo medio de adopción por color. La inferencia se realiza bajo un enfoque bayesiano utilizando Stan.
 
 ```{r}
-# Preparar datos incluyendo censura
-cats <- cats |>
-  mutate(
-    color_id = if_else(color == "Black", 1L, 2L),
-    adopted = if_else(out_event == "Adoption", 1L, 0L),
-    days = as.numeric(days_to_event)
-  )
-
-dat_stan_cens <- list(
-  N = nrow(cats),
-  days = cats$days,
-  color = cats$color_id,
-  adopted = cats$adopted
-)
-
 # Modelo Stan que considera censura
 stan_code_cens <- "
 data {
@@ -298,49 +283,43 @@ model {
   }
 }
 "
+```
 
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Preparar datos
+cats <- cats |>
+  mutate(
+    color_id = if_else(color == "Black", 1L, 2L),
+    adopted = if_else(out_event == "Adoption", 1L, 0L),
+    days = as.numeric(days_to_event)
+  )
+# datos para el modelo Stan
+dat_stan_cens <- list(
+  N = nrow(cats),
+  days = cats$days,
+  color = cats$color_id,
+  adopted = cats$adopted
+)
 # Compilar y ajustar
 compiled_cens <- rstan::stan_model(model_code = stan_code_cens)
 fit_cens <- rstan::sampling(compiled_cens, data = dat_stan_cens,
                             chains = 4, iter = 2000, cores = 4)
 
 ```
-
-```{r}
-post_cens <- as.data.frame(fit_cens)
-
-mu_negro_cens <- exp(post_cens$`alpha[1]`)
-mu_otro_cens  <- exp(post_cens$`alpha[2]`)
-
-library(tibble)
-results_tbl_cens <- tibble(
-  Color = c("Negro", "Otro"),
-  Media = c(mean(mu_negro_cens), mean(mu_otro_cens)),
-  `IC 89% Inferior` = c(quantile(mu_negro_cens, 0.055), quantile(mu_otro_cens, 0.055)),
-  `IC 89% Superior` = c(quantile(mu_negro_cens, 0.945), quantile(mu_otro_cens, 0.945))
-)
-print(results_tbl_cens)
-
+Una vez que terminó el modelo realizamos diagnósticos de convergencia:
+```{r, echo=FALSE}
+print(fit_cens, pars = "alpha", probs = c(0.025, 0.5, 0.975))
 ```
 
-```{r}
-
-ggplot(results_tbl_cens, aes(x = Color, y = Media, fill = Color)) +
-  geom_col(width = 0.5, color = "black") +
-  geom_errorbar(aes(ymin = `IC 89% Inferior`, ymax = `IC 89% Superior`), width = 0.2, color="red") +
-  labs(
-    title = "Tiempo medio de adopción por color",
-    y = "Tiempo medio (días)", x = "Color del gato"
-  ) +
-  theme_minimal() +
-  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
-  theme(legend.position = "none")
-
+```{r, echo=FALSE}
+rstan::traceplot(fit_cens, pars = "alpha")
 ```
 
-Los resultados muestran que, en promedio, los gatos negros tardan más en ser adoptados que los de otros colores. Este patrón sugiere que el color del gato podría estar asociado con un menor ritmo de adopción, aunque es importante considerar que pueden existir otros factores no observados que también influyen en este proceso.
+Las cadenas de Markov para los parámetros $\alpha_1$ y $\alpha_2$, asociadas a los grupos de color del gato (negro y otro, respectivamente), muestran una buena mezcla y estabilidad a lo largo de las iteraciones, sin tendencias evidentes ni divergencias entre cadenas. Esto, junto con valores de $\hat{R}$ cercanos a 1 y tamaños efectivos adecuados, sugiere que el muestreo posterior ha convergido correctamente.
 
-```{r}
+Por lo tanto seguimos con la vizualición de las distribuciones posteriores para los dias de adopcion:
+
+```{r, echo=FALSE}
 
 posterior_mu <- tibble(
   mu_negro = mu_negro_cens,
@@ -354,7 +333,7 @@ posterior_mu <- tibble(
 ggplot(posterior_mu, aes(x = mu, fill = Color)) +
   geom_density(alpha = 0.6) +
   scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
-  labs(title = "Distribución posterior del tiempo medio de adopción considerando censura",
+  labs(title = "Distribución posterior del tiempo medio de adopción",
        x = "Tiempo medio estimado (mu)",
        y = "Densidad",
        fill = "Color del gato") +
@@ -362,7 +341,7 @@ ggplot(posterior_mu, aes(x = mu, fill = Color)) +
 
 ```
 
-Según la distribución posterior del tiempo medio de adopción, los gatos negros tardan consistentemente más en ser adoptados que los de otros colores, y esta diferencia está respaldada por una clara separación en sus distribuciones posteriores.
+la distribución posterior de los tiempos medios de adopción ($\mu=exp(\alpha)$) para cada grupo. Se observa que los gatos de color negro tienen, en promedio, un mayor tiempo estimado de adopción en comparación con los gatos de otro color. Esta diferencia es clara y consistente en las distribuciones posteriores, lo que respalda la hipótesis de que el color del gato influye en el tiempo que tarda en ser adoptado. El modelo, al incorporar adecuadamente la censura, permite recuperar esta relación de forma robusta a partir de los datos observados.
 
 ## Ajuste controlando la variable edad
 
