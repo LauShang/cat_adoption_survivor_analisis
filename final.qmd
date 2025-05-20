@@ -306,7 +306,7 @@ fit_cens <- rstan::sampling(compiled_cens, data = dat_stan_cens,
                             chains = 4, iter = 2000, cores = 4)
 
 ```
-Una vez que terminó el modelo realizamos diagnósticos de convergencia:
+Una vez finalizada la estimación del modelo, se realizaron diagnósticos de convergencia para evaluar la estabilidad y confiabilidad de las cadenas de muestreo.
 ```{r, echo=FALSE}
 print(fit_cens, pars = "alpha", probs = c(0.025, 0.5, 0.975))
 ```
@@ -351,25 +351,9 @@ Se asume que el tiempo hasta la adopción sigue una distribución exponencial co
 
 Este enfoque permite estimar con mayor precisión el efecto del color, aislando posibles confusiones derivadas de diferencias sistemáticas en edad entre grupos. Así se evita atribuir al color lo que en realidad podría ser efecto de la edad.
 
+El modelo en STAN quedaría de la siguiente manera:
+
 ```{r}
-# Preparar los datos
-cats <- cats |> 
-  filter(!is.na(intake_age)) |> 
-  mutate(
-    color_id = if_else(color == "Black", 1L, 2L),
-    age_std = as.numeric(scale(intake_age)),  # edad estandarizada
-    days = as.numeric(days_to_event),
-    adopted = if_else(out_event == "Adoption", 1L, 0L)  # 1 = adoptado, 0 = censurado
-  )
-
-dat_stan <- list(
-  N = nrow(cats),
-  days = cats$days,
-  color = cats$color_id,
-  age = cats$age_std,
-  adopted = cats$adopted
-)
-
 # Modelo Stan con censura (usando funciones ya incluidas en Stan)
 stan_model_code <- "
 data {
@@ -395,6 +379,26 @@ model {
   }
 }
 "
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Preparar los datos
+cats <- cats |> 
+  filter(!is.na(intake_age)) |> 
+  mutate(
+    color_id = if_else(color == "Black", 1L, 2L),
+    age_std = as.numeric(scale(intake_age)),  # edad estandarizada
+    days = as.numeric(days_to_event),
+    adopted = if_else(out_event == "Adoption", 1L, 0L)  # 1 = adoptado, 0 = censurado
+  )
+
+dat_stan <- list(
+  N = nrow(cats),
+  days = cats$days,
+  color = cats$color_id,
+  age = cats$age_std,
+  adopted = cats$adopted
+)
 
 compiled_model <- rstan::stan_model(model_code = stan_model_code)
 fit <- rstan::sampling(compiled_model, data = dat_stan, chains = 4, cores = 4, iter = 2000)
@@ -402,43 +406,24 @@ post <- as.data.frame(fit)
 
 ```
 
-```{r}
-
-# Evaluación a edad promedio
-mean_age <- mean(cats$age_std, na.rm = TRUE)
-mu_negro <- exp(post$`alpha[1]` + post$beta_age * mean_age)
-mu_otro  <- exp(post$`alpha[2]` + post$beta_age * mean_age)
-
-# Tabla resumen
-results_tbl <- tibble(
-  Color = c("Negro", "Otro"),
-  Media = c(mean(mu_negro), mean(mu_otro)),
-  IC_Inf = c(quantile(mu_negro, 0.055), quantile(mu_otro, 0.055)),
-  IC_Sup = c(quantile(mu_negro, 0.945), quantile(mu_otro, 0.945))
-)
-
-print(results_tbl)
-
+Una vez finalizada la estimación del modelo, se realizaron diagnósticos de convergencia para evaluar la estabilidad y confiabilidad de las cadenas de muestreo.
+```{r, echo=FALSE}
+print(fit, pars = c("alpha","beta_age"), probs = c(0.025, 0.5, 0.975))
 ```
 
-```{r}
-
-ggplot(results_tbl, aes(x = Color, y = Media, fill = Color)) +
-  geom_col(width = 0.5, color = "black") +
-  geom_errorbar(aes(ymin = IC_Inf, ymax = IC_Sup), width = 0.2, color = "red") +
-  labs(
-    title = "Tiempo medio de adopción por color y edad ",
-    y = "Tiempo medio (días)", x = "Color del gato"
-  ) +
-  theme_minimal() +
-  scale_fill_manual(values = c("Negro" = "black", "Otro" = "gray70")) +
-  theme(legend.position = "none")
-
+```{r, echo=FALSE}
+rstan::traceplot(fit, pars = c("alpha","beta_age"))
 ```
+
+Al igual que en el modelo inicial, la inclusión de la edad como covariable no afectó negativamente la convergencia. Las trazas de las cadenas y los valores de $\hat{R}$ cercanos a 1 indican que no hubo problemas en la estimación posterior.
 
 Con estos resultados vemos que los gatos negros tienden a tardar más en ser adoptados, lo cual respalda la hipótesis de que el color podría influir en las decisiones de adopción, aunque no necesariamente sea el único factor causal
 
 ```{r}
+# Evaluación a edad promedio
+mean_age <- mean(cats$age_std, na.rm = TRUE)
+mu_negro <- exp(post$`alpha[1]` + post$beta_age * mean_age)
+mu_otro  <- exp(post$`alpha[2]` + post$beta_age * mean_age)
 
 posterior_mu_edad <- tibble(
   mu_negro = mu_negro,
@@ -465,7 +450,6 @@ Esta distribución posterior muestra los tiempos medios estimados de adopción p
 
 ## Conclusiones
 
--   El modelo **con censura** incorpora toda la información, incluyendo gatos aún no adoptados, y ofrece estimaciones más realistas.
--   El modelo **sin censura** ignora casos censurados, lo que puede subestimar el tiempo real de espera.
--   En ambos modelos, se observa que los gatos negros tienden a tardar más en ser adoptados.
--   Al controlar por **edad**, se refina la estimación y se reduce el riesgo de atribuir erróneamente efectos al color que podrían deberse a diferencias de edad.
+El modelo que incorpora censura permite utilizar toda la información disponible, incluyendo la de aquellos gatos que no fueron adoptados durante el periodo de observación. Esto resulta fundamental, ya que los datos censurados también contienen evidencia útil sobre el proceso de adopción. En consecuencia, una regresión lineal simple sobre los días observados sin considerar la censura sería inapropiada y potencialmente sesgada, pues ignoraría parte importante de la estructura de los datos.
+
+Los resultados obtenidos muestran de forma consistente que los gatos negros tienden a permanecer más tiempo en espera de adopción en comparación con los gatos de otros colores. Esta diferencia se mantiene tanto en el modelo básico como en la versión extendida que controla por edad. La inclusión de la edad como covariable mejora la precisión de las estimaciones y reduce el riesgo de atribuir al color del gato efectos que en realidad podrían explicarse por diferencias etarias.
