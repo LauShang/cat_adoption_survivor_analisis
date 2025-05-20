@@ -320,6 +320,10 @@ Las cadenas de Markov para los parámetros $\alpha_1$ y $\alpha_2$, asociadas a 
 Por lo tanto seguimos con la vizualición de las distribuciones posteriores para los dias de adopcion:
 
 ```{r, echo=FALSE}
+post_cens <- as.data.frame(fit_cens)
+
+mu_negro_cens <- exp(post_cens$`alpha[1]`)
+mu_otro_cens  <- exp(post_cens$`alpha[2]`)
 
 posterior_mu <- tibble(
   mu_negro = mu_negro_cens,
