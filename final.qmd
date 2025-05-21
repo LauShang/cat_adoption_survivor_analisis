@@ -177,8 +177,10 @@ Esta expresión es clave para realizar inferencias en presencia de censura.
 
 La siguiente función implementa este modelo generando un conjunto sintético de datos de adopción bajo los supuestos descritos:
 
+La proporción de gatos negros (`p_black = 0.15`) y la proporción de casos censurados (`p_censored = 0.5`) se obtuvieron a partir del análisis de la base de datos original. El valor de `alpha_other`, correspondiente al tiempo medio de adopción para gatos no negros, se fijó en `log(55)` días, tomando como referencia el promedio reportado en [Adopt-a-Pet](https://www.adoptapet.com/blog/rehome/how-long-does-the-humane-society-keep-cats?utm_source=chatgpt.com).
+
 ```{r}
-sim_cats <- function(N = 1000, alpha_black = log(70), alpha_other = log(50),
+sim_cats <- function(N = 1000, alpha_black = log(70), alpha_other = log(55),
                            p_black = 0.15, p_censored = 0.5) {
   color_id <- rbinom(N, 1, p_black) + 1
   alpha <- c(alpha_black, alpha_other)
